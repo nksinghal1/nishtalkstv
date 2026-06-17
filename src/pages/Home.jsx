@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, TrendingUp } from 'lucide-react'
+import { useAuth } from '../lib/auth'
+import PasswordModal from '../components/ui/PasswordModal'
 import { showsApi } from '../lib/db'
 import ShowCard from '../components/shows/ShowCard'
 import ShowDetailSidebar from '../components/shows/ShowDetailSidebar'
@@ -12,6 +14,8 @@ export default function Home() {
   const [selectedShow, setSelectedShow] = useState(null)
   const [showLogModal, setShowLogModal] = useState(false)
   const [editShow, setEditShow] = useState(null)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   const load = async () => {
     setLoading(true)
@@ -44,7 +48,7 @@ export default function Home() {
         </div>
         <button
           className="btn btn-primary"
-          onClick={() => setShowLogModal(true)}
+          onClick={() => isAuthenticated ? setShowLogModal(true) : setShowPasswordModal(true)}
         >
           <Plus size={16} /> Log a Show
         </button>
@@ -68,7 +72,7 @@ export default function Home() {
             <p>Start building your TV archive.</p>
             <button
               className="btn btn-primary"
-              onClick={() => setShowLogModal(true)}
+              onClick={() => isAuthenticated ? setShowLogModal(true) : setShowPasswordModal(true)}
             >
               <Plus size={16} /> Log your first show
             </button>
@@ -92,6 +96,14 @@ export default function Home() {
           show={selectedShow}
           onClose={() => setSelectedShow(null)}
           onEdit={handleEdit}
+        />
+      )}
+
+      {/* Password modal */}
+      {showPasswordModal && (
+        <PasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => { setShowPasswordModal(false); setShowLogModal(true) }}
         />
       )}
 

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Filter, Search, X } from 'lucide-react'
+import { useAuth } from '../lib/auth'
+import PasswordModal from '../components/ui/PasswordModal'
 import { showsApi } from '../lib/db'
 import { getLanguageName, LANGUAGE_NAMES } from '../lib/tmdb'
 import ShowCard from '../components/shows/ShowCard'
@@ -19,6 +21,8 @@ export default function Shows({ statusFilter = null }) {
   const [selectedShow, setSelectedShow] = useState(null)
   const [showLogModal, setShowLogModal] = useState(false)
   const [editShow, setEditShow] = useState(null)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({
@@ -78,7 +82,7 @@ export default function Shows({ statusFilter = null }) {
           >
             <Filter size={14} /> Filters {hasActiveFilters && '•'}
           </button>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowLogModal(true)}>
+          <button className="btn btn-primary btn-sm" onClick={() => isAuthenticated ? setShowLogModal(true) : setShowPasswordModal(true)}>
             <Plus size={14} /> Log Show
           </button>
         </div>
@@ -181,7 +185,7 @@ export default function Shows({ statusFilter = null }) {
           <span className="empty-state-icon">🔍</span>
           <h3>{search || hasActiveFilters ? 'No shows match your filters' : 'Nothing here yet'}</h3>
           {!search && !hasActiveFilters && (
-            <button className="btn btn-primary" onClick={() => setShowLogModal(true)}>
+            <button className="btn btn-primary" onClick={() => isAuthenticated ? setShowLogModal(true) : setShowPasswordModal(true)}>
               <Plus size={16} /> Log a Show
             </button>
           )}
@@ -196,6 +200,13 @@ export default function Shows({ statusFilter = null }) {
             />
           ))}
         </div>
+      )}
+
+      {showPasswordModal && (
+        <PasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => { setShowPasswordModal(false); setShowLogModal(true) }}
+        />
       )}
 
       {selectedShow && (

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { X, Edit2, ExternalLink } from 'lucide-react'
+import { useAuth } from '../../lib/auth'
+import PasswordModal from '../ui/PasswordModal'
 import { tmdb, RATING_LABELS, getLanguageName } from '../../lib/tmdb'
 import { tagsApi, similarityApi } from '../../lib/db'
 import './ShowDetailSidebar.css'
@@ -8,6 +10,8 @@ export default function ShowDetailSidebar({ show, onClose, onEdit }) {
   const [tags, setTags] = useState([])
   const [similarities, setSimilarities] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     if (!show) return
@@ -49,7 +53,7 @@ export default function ShowDetailSidebar({ show, onClose, onEdit }) {
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
             <X size={16} /> Close
           </button>
-          <button className="btn btn-secondary btn-sm" onClick={() => onEdit(show)}>
+          <button className="btn btn-secondary btn-sm" onClick={() => isAuthenticated ? onEdit(show) : setShowPasswordModal(true)}>
             <Edit2 size={14} /> Edit
           </button>
         </div>
@@ -101,7 +105,14 @@ export default function ShowDetailSidebar({ show, onClose, onEdit }) {
           </div>
         )}
 
-        {/* Overview */}
+        {showPasswordModal && (
+        <PasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => { setShowPasswordModal(false); onEdit(show) }}
+        />
+      )}
+
+      {/* Overview */}
         {show.overview && (
           <div className="dsb-section">
             <div className="dsb-section-label">Synopsis</div>
