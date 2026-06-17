@@ -99,6 +99,15 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null }) {
   const selectShow = async (tmdbShow) => {
     setSearching(true)
     try {
+      // Check if already logged
+      const existing = await showsApi.getByTmdbId(tmdbShow.id)
+      if (existing) {
+        // Load full show with log data and switch to edit mode
+        const withLog = await showsApi.getById(existing.id)
+        onClose()
+        onEdit?.(withLog)
+        return
+      }
       const full = await tmdb.getShow(tmdbShow.id)
       setSelectedTmdbShow(full)
       setSearchResults([])

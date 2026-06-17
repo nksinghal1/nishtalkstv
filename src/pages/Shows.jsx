@@ -222,6 +222,7 @@ export default function Shows({ statusFilter = null }) {
           editShow={editShow}
           onClose={() => { setShowLogModal(false); setEditShow(null) }}
           onSuccess={() => { load(); setShowLogModal(false); setEditShow(null) }}
+          onEdit={(show) => { setShowLogModal(false); setEditShow(show) }}
         />
       )}
     </div>
