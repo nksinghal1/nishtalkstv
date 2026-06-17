@@ -104,7 +104,6 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null }) {
       if (existing) {
         // Load full show with log data and switch to edit mode
         const withLog = await showsApi.getById(existing.id)
-        onClose()
         onEdit?.(withLog)
         return
       }
