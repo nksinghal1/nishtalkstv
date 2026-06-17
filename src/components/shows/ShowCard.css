@@ -1,0 +1,97 @@
+.show-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.show-card-poster {
+  position: relative;
+  aspect-ratio: 2/3;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.show-card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.show-card:hover .show-card-poster img {
+  transform: scale(1.03);
+}
+
+.show-card-no-poster {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--text-muted);
+}
+
+.show-card-status {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  font-size: 0.7rem;
+}
+
+.show-card-body {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.show-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.show-card-year {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.show-card-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+
+.show-card-genres .badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.show-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
+
+.show-card-rating .mono {
+  color: var(--blue-highlight);
+  font-weight: 600;
+}
+
+.show-card-rating-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}

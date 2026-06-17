@@ -1,0 +1,129 @@
+.stats-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.stats-primary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.stats-primary-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stats-primary-card.accent {
+  border-color: var(--blue-primary);
+}
+
+.stats-primary-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+.stats-primary-value {
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stats-primary-value.accent {
+  color: var(--blue-highlight);
+}
+
+.stats-secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.stats-card {
+  padding: 1.25rem;
+}
+
+.stats-card-title {
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+/* Bar chart */
+.stats-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.stats-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stats-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.stats-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stats-bar-fill {
+  height: 100%;
+  background: var(--blue-accent);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.stats-bar-count {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  width: 2rem;
+  text-align: right;
+}
+
+/* List */
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.stats-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.stats-list-row:last-child { border-bottom: none; }
+
+.stats-list-label { color: var(--text-secondary); }
+
+.stats-list-count {
+  color: var(--blue-highlight);
+}

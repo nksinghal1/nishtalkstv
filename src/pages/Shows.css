@@ -1,0 +1,39 @@
+.shows-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.show-count {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+
+.shows-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.shows-search-wrap {
+  position: relative;
+}
+
+.shows-search {
+  padding-left: 2.5rem;
+}
+
+.filters-active {
+  color: var(--blue-highlight);
+  border-color: var(--blue-accent);
+}
+
+.filters-panel {
+  padding: 1.25rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
