@@ -4,7 +4,7 @@ import { tmdb, RATING_LABELS, getLanguageName } from '../../lib/tmdb'
 import { showsApi, watchLogsApi, tagsApi, similarityApi } from '../../lib/db'
 import './LogShowModal.css'
 
-export default function LogShowModal({ onClose, onSuccess, editShow = null }) {
+export default function LogShowModal({ onClose, onSuccess, editShow = null, onEdit }) {
   const isEdit = !!editShow
 
   // Search state
