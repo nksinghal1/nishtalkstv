@@ -267,11 +267,13 @@ export const statsApi = {
       })
     })
 
-    // This year
+    // This year — exclude shows marked as watched before tracking
     const thisYear = new Date().getFullYear()
     const watchedThisYear = data.filter(s => {
-      if (!s.date_watched) return false
-      return new Date(s.date_watched).getFullYear() === thisYear
+      if (s.watched_before_tracking) return false
+      const dateToCheck = s.date_watched_override || s.date_watched
+      if (!dateToCheck) return false
+      return new Date(dateToCheck).getFullYear() === thisYear
     }).length
 
     return {

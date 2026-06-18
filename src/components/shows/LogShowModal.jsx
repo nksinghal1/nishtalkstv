@@ -27,6 +27,8 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
   const [simResults, setSimResults] = useState([])
   const [simSearching, setSimSearching] = useState(false)
 
+  const [watchedBeforeTracking, setWatchedBeforeTracking] = useState(false)
+  const [watchedOnDate, setWatchedOnDate] = useState(new Date().toISOString().split('T')[0])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
@@ -45,6 +47,8 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
     setRating(editShow.rating?.toString() || '')
     setReview(editShow.review || '')
     setDropReason(editShow.drop_reason || '')
+    setWatchedBeforeTracking(editShow.watched_before_tracking || false)
+    setWatchedOnDate(editShow.date_watched_override || '')
 
     const loadEditData = async () => {
       const [existingTags, existingLinks] = await Promise.all([
@@ -188,6 +192,8 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
         rating: watchStatus === 'completed' ? parseInt(rating) : null,
         review: watchStatus === 'completed' ? review || null : null,
         drop_reason: watchStatus === 'dropped' ? dropReason || null : null,
+        watched_before_tracking: watchedBeforeTracking,
+        date_watched_override: watchedBeforeTracking ? null : (watchedOnDate || null),
         date_watched: isEdit ? undefined : new Date().toISOString(),
       }
       await watchLogsApi.upsert(showRecord.id, logData)
@@ -395,6 +401,30 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
                 </div>
               </div>
             )}
+
+            {/* Watched On */}
+            <div className="log-section">
+              <div className="form-group">
+                <label className="form-label">When did you watch it?</label>
+                <label className="before-tracking-label">
+                  <input
+                    type="checkbox"
+                    checked={watchedBeforeTracking}
+                    onChange={e => { setWatchedBeforeTracking(e.target.checked); setWatchedOnDate('') }}
+                  />
+                  <span>Watched before November 2023</span>
+                </label>
+                {!watchedBeforeTracking && (
+                  <input
+                    type="date"
+                    className="input"
+                    value={watchedOnDate}
+                    onChange={e => setWatchedOnDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                )}
+              </div>
+            </div>
 
             {/* Tags */}
             <div className="log-section">
