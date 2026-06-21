@@ -21,6 +21,7 @@ export default function Tags() {
   const [newTagInput, setNewTagInput] = useState('')
   const [creatingTag, setCreatingTag] = useState(false)
   const [toggling, setToggling] = useState(new Set()) // show IDs being toggled
+  const [lockedOrder, setLockedOrder] = useState([]) // frozen sort order for current tag
 
   const loadTags = async () => {
     setLoadingTags(true)
@@ -73,7 +74,17 @@ export default function Tags() {
         .select('show_id')
         .eq('tag_id', tag.id)
       if (error) throw error
-      setTagShows(data.map(d => d.show_id))
+      const taggedIds = data.map(d => d.show_id)
+      setTagShows(taggedIds)
+      // Lock sort order: tagged first, then rest — frozen until tag changes
+      const ordered = [...allShows].sort((a, b) => {
+        const aT = taggedIds.includes(a.id)
+        const bT = taggedIds.includes(b.id)
+        if (aT && !bT) return -1
+        if (!aT && bT) return 1
+        return 0
+      })
+      setLockedOrder(ordered.map(s => s.id))
     } catch (e) {
       console.error(e)
     } finally {
@@ -145,16 +156,12 @@ export default function Tags() {
     !tagSearch || t.name.includes(tagSearch.toLowerCase())
   )
 
-  // Sort: tagged shows first, then rest — filtered by search
-  const sortedShows = [...allShows]
+  // Use locked order (set when tag is selected) — never re-sorts on toggle
+  const showsById = Object.fromEntries(allShows.map(s => [s.id, s]))
+  const sortedShows = lockedOrder
+    .map(id => showsById[id])
+    .filter(Boolean)
     .filter(s => !showSearch || s.title.toLowerCase().includes(showSearch.toLowerCase()))
-    .sort((a, b) => {
-      const aTagged = tagShows.includes(a.id)
-      const bTagged = tagShows.includes(b.id)
-      if (aTagged && !bTagged) return -1
-      if (!aTagged && bTagged) return 1
-      return 0
-    })
 
   const taggedCount = tagShows.length
 
