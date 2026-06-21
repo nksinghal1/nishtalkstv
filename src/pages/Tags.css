@@ -2,34 +2,49 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  height: calc(100vh - 4rem);
 }
 
 .tags-layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 260px 1fr;
   gap: 1.5rem;
-  flex: 1;
   min-height: 0;
 }
 
+/* Left sidebar */
 .tags-sidebar {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: fit-content;
   max-height: calc(100vh - 10rem);
+  position: sticky;
+  top: 1rem;
+}
+
+.tags-create-wrap {
+  padding: 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tags-create-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tags-create-input {
+  font-size: 0.875rem;
+  flex: 1;
 }
 
 .tags-search-wrap {
   position: relative;
-  padding: 0.875rem;
+  padding: 0.75rem;
   border-bottom: 1px solid var(--border);
 }
 
 .tags-search-icon {
   position: absolute;
-  left: 1.5rem;
+  left: 1.375rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
@@ -43,8 +58,7 @@
 
 .tags-list {
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  flex: 1;
 }
 
 .tags-empty {
@@ -71,15 +85,12 @@
   font-family: var(--font-body);
   font-size: 0.875rem;
   transition: all 0.15s ease;
+  width: 100%;
 }
 
 .tag-item:last-child { border-bottom: none; }
 .tag-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-
-.tag-item.active {
-  background: var(--blue-primary);
-  color: var(--text-primary);
-}
+.tag-item.active { background: var(--blue-primary); color: var(--text-primary); }
 
 .tag-name { font-weight: 500; }
 
@@ -88,15 +99,148 @@
   font-size: 0.8125rem;
 }
 
-.tag-item.active .tag-count {
-  color: var(--blue-highlight);
+.tag-item.active .tag-count { color: var(--blue-highlight); }
+
+/* Right content */
+.tags-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
 }
 
-.tags-content {
-  overflow-y: auto;
+.tag-content-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .tag-content-heading {
-  margin-bottom: 1.25rem;
   font-size: 1.25rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.tag-content-count {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.tags-show-search-wrap {
+  position: relative;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+/* Show rows */
+.tag-shows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.tag-show-row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s ease;
+  background: var(--bg-secondary);
+}
+
+.tag-show-row:last-child { border-bottom: none; }
+
+.tag-show-row:hover { background: var(--bg-tertiary); }
+
+.tag-show-row.tagged { background: rgba(36, 59, 99, 0.25); }
+.tag-show-row.tagged:hover { background: rgba(36, 59, 99, 0.4); }
+
+.tag-show-toggle {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toggle-on {
+  width: 22px;
+  height: 22px;
+  background: var(--blue-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.toggle-off {
+  width: 22px;
+  height: 22px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.tag-show-row:hover .toggle-off {
+  border-color: var(--blue-accent);
+  color: var(--blue-highlight);
+}
+
+.tag-show-poster {
+  width: 32px;
+  height: 48px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.tag-show-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tag-show-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-show-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag-show-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.tag-show-status-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
 }
