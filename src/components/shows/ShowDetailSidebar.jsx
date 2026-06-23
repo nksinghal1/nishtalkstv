@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { X, Edit2, ExternalLink } from 'lucide-react'
+import { X, Edit2, ExternalLink, Trash2 } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import PasswordModal from '../ui/PasswordModal'
 import { tmdb, RATING_LABELS, getLanguageName } from '../../lib/tmdb'
 import { tagsApi, similarityApi } from '../../lib/db'
+import { supabase } from '../../lib/supabase'
 import './ShowDetailSidebar.css'
 
 export default function ShowDetailSidebar({ show, onClose, onEdit }) {
@@ -11,6 +12,8 @@ export default function ShowDetailSidebar({ show, onClose, onEdit }) {
   const [similarities, setSimilarities] = useState([])
   const [loading, setLoading] = useState(true)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const { isAuthenticated } = useAuth()
 
   useEffect(() => {
@@ -32,6 +35,26 @@ export default function ShowDetailSidebar({ show, onClose, onEdit }) {
     }
     load()
   }, [show?.id])
+
+  const handleDelete = async () => {
+    if (!isAuthenticated) { setShowPasswordModal(true); return }
+    setDeleting(true)
+    try {
+      // Delete in order: show_tags, similarity_links, watch_logs, then show
+      await supabase.from('show_tags').delete().eq('show_id', show.id)
+      await supabase.from('similarity_links').delete().or(`show_a_id.eq.${show.id},show_b_id.eq.${show.id}`)
+      await supabase.from('watch_logs').delete().eq('show_id', show.id)
+      await supabase.from('shows').delete().eq('id', show.id)
+      onClose()
+      // Trigger a page reload to refresh the list
+      window.location.reload()
+    } catch(e) {
+      console.error(e)
+    } finally {
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
 
   if (!show) return null
 
@@ -55,6 +78,9 @@ export default function ShowDetailSidebar({ show, onClose, onEdit }) {
           </button>
           <button className="btn btn-secondary btn-sm" onClick={() => isAuthenticated ? onEdit(show) : setShowPasswordModal(true)}>
             <Edit2 size={14} /> Edit
+          </button>
+          <button className="btn btn-danger btn-sm" onClick={() => isAuthenticated ? setShowDeleteConfirm(true) : setShowPasswordModal(true)}>
+            <Trash2 size={14} />
           </button>
         </div>
 
@@ -110,6 +136,22 @@ export default function ShowDetailSidebar({ show, onClose, onEdit }) {
           onClose={() => setShowPasswordModal(false)}
           onSuccess={() => { setShowPasswordModal(false); onEdit(show) }}
         />
+      )}
+
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="modal" style={{maxWidth:360, textAlign:'center'}} onClick={e=>e.stopPropagation()}>
+            <Trash2 size={24} style={{color:'var(--danger)',margin:'0 auto 1rem'}} />
+            <h3 style={{marginBottom:'0.5rem'}}>Remove {show.title}?</h3>
+            <p style={{fontSize:'0.875rem',marginBottom:'1.5rem'}}>This will delete the show, its watch log, tags and all similarity links. This cannot be undone.</p>
+            <div style={{display:'flex',gap:'0.75rem',justifyContent:'center'}}>
+              <button className="btn btn-secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Removing...' : 'Yes, remove it'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Overview */}
