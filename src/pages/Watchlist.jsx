@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Plus, Search, X, Filter, Trash2, BookMarked } from 'lucide-react'
-import { watchlistApi } from '../lib/db'
+import { watchlistApi, showsApi } from '../lib/db'
 import { tmdb, getLanguageName, LANGUAGE_NAMES, GENRE_ICONS } from '../lib/tmdb'
 import { useAuth } from '../lib/auth'
 import PasswordModal from '../components/ui/PasswordModal'
@@ -234,29 +234,56 @@ function AddToWatchlistModal({ onClose, onSuccess }) {
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [adding, setAdding] = useState(null)
+  const [statusMap, setStatusMap] = useState({}) // tmdbId -> 'watchlist' | 'watched'
   const searchTimeout = useRef(null)
 
   useEffect(() => {
-    if (!query.trim()) { setResults([]); return }
+    if (!query.trim()) { setResults([]); setStatusMap({}); return }
     clearTimeout(searchTimeout.current)
     searchTimeout.current = setTimeout(async () => {
       setSearching(true)
       try {
         const res = await tmdb.searchShows(query)
-        setResults(res.results?.slice(0,8) || [])
+        const shows = res.results?.slice(0,8) || []
+        setResults(shows)
+
+        // Check status for each result
+        const newStatusMap = {}
+        await Promise.all(shows.map(async (show) => {
+          const [onWatchlist, watched] = await Promise.all([
+            watchlistApi.isOnWatchlist(show.id),
+            showsApi.getByTmdbId(show.id),
+          ])
+          if (onWatchlist) newStatusMap[show.id] = 'watchlist'
+          else if (watched) newStatusMap[show.id] = 'watched'
+        }))
+        setStatusMap(newStatusMap)
       } catch(e) { console.error(e) }
       finally { setSearching(false) }
     }, 400)
   }, [query])
 
   const addShow = async (tmdbShow) => {
+    if (statusMap[tmdbShow.id]) return
     setAdding(tmdbShow.id)
     try {
       const full = await tmdb.getShow(tmdbShow.id)
       await watchlistApi.add(full)
+      setStatusMap(prev => ({ ...prev, [tmdbShow.id]: 'watchlist' }))
       onSuccess()
     } catch(e) { console.error(e) }
     finally { setAdding(null) }
+  }
+
+  const getStatusBadge = (tmdbId) => {
+    const status = statusMap[tmdbId]
+    if (status === 'watchlist') return (
+      <span style={{fontSize:'0.75rem',color:'var(--blue-highlight)',flexShrink:0}}>In watchlist</span>
+    )
+    if (status === 'watched') return (
+      <span style={{fontSize:'0.75rem',color:'var(--success)',flexShrink:0}}>Already watched</span>
+    )
+    return null
   }
 
   return (
@@ -273,19 +300,23 @@ function AddToWatchlistModal({ onClose, onSuccess }) {
         </div>
         {results.length > 0 && (
           <div className="search-results" style={{marginTop:'0.75rem'}}>
-            {results.map(show=>(
-              <button key={show.id} className="search-result-item" onClick={()=>addShow(show)} disabled={adding===show.id}>
-                {show.poster_path && <img src={tmdb.posterUrl(show.poster_path,'w92')} alt={show.name} className="search-result-poster"/>}
-                <div style={{flex:1,textAlign:'left'}}>
-                  <div className="search-result-title">{show.name}</div>
-                  <div className="search-result-year">{show.first_air_date?.slice(0,4)}</div>
-                </div>
-                {adding===show.id
-                  ? <div className="loading-spinner" style={{width:16,height:16}}/>
-                  : <Plus size={16} style={{color:'var(--text-muted)',flexShrink:0}}/>
-                }
-              </button>
-            ))}
+            {results.map(show=>{
+              const status = statusMap[show.id]
+              const isDisabled = !!status || adding===show.id
+              return (
+                <button key={show.id} className="search-result-item" onClick={()=>addShow(show)} disabled={isDisabled} style={{opacity: isDisabled && status ? 0.6 : 1}}>
+                  {show.poster_path && <img src={tmdb.posterUrl(show.poster_path,'w92')} alt={show.name} className="search-result-poster"/>}
+                  <div style={{flex:1,textAlign:'left'}}>
+                    <div className="search-result-title">{show.name}</div>
+                    <div className="search-result-year">{show.first_air_date?.slice(0,4)}</div>
+                  </div>
+                  {adding===show.id
+                    ? <div className="loading-spinner" style={{width:16,height:16}}/>
+                    : getStatusBadge(show.id) || <Plus size={16} style={{color:'var(--text-muted)',flexShrink:0}}/>
+                  }
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
