@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search, X, Plus, Trash2 } from 'lucide-react'
 import { tmdb, RATING_LABELS, getLanguageName } from '../../lib/tmdb'
-import { showsApi, watchLogsApi, tagsApi, similarityApi } from '../../lib/db'
+import { showsApi, watchLogsApi, tagsApi, similarityApi, watchlistApi } from '../../lib/db'
 import './LogShowModal.css'
 
 export default function LogShowModal({ onClose, onSuccess, editShow = null, onEdit }) {
@@ -197,6 +197,9 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
         date_watched: isEdit ? undefined : new Date().toISOString(),
       }
       await watchLogsApi.upsert(showRecord.id, logData)
+
+      // Remove from watchlist if present
+      await watchlistApi.remove(showRecord.tmdb_id).catch(() => {})
 
       // Tags
       await tagsApi.setShowTags(showRecord.id, tags)

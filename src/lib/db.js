@@ -290,3 +290,95 @@ export const statsApi = {
     }
   },
 }
+
+// ─── WATCHLIST ────────────────────────────────────────────────────────────────
+
+export const watchlistApi = {
+  getAll: async (filters = {}) => {
+    let query = supabase
+      .from('watchlist')
+      .select('*')
+      .order('added_at', { ascending: false })
+
+    if (filters.language) query = query.eq('original_language', filters.language)
+    if (filters.ratingMin) query = query.gte('tmdb_rating', filters.ratingMin)
+    if (filters.ratingMax) query = query.lte('tmdb_rating', filters.ratingMax)
+    if (filters.genre) {
+      query = query.contains('genres', JSON.stringify([{ name: filters.genre }]))
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    return data
+  },
+
+  add: async (tmdbShow) => {
+    const { data, error } = await supabase
+      .from('watchlist')
+      .upsert({
+        tmdb_id: tmdbShow.id,
+        title: tmdbShow.name || tmdbShow.title,
+        poster_path: tmdbShow.poster_path,
+        backdrop_path: tmdbShow.backdrop_path,
+        overview: tmdbShow.overview,
+        first_air_date: tmdbShow.first_air_date,
+        genres: tmdbShow.genres || [],
+        origin_country: tmdbShow.origin_country || [],
+        original_language: tmdbShow.original_language,
+        number_of_episodes: tmdbShow.number_of_episodes,
+        number_of_seasons: tmdbShow.number_of_seasons,
+        tmdb_rating: tmdbShow.vote_average,
+      }, { onConflict: 'tmdb_id' })
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  },
+
+  remove: async (tmdbId) => {
+    const { error } = await supabase
+      .from('watchlist')
+      .delete()
+      .eq('tmdb_id', tmdbId)
+    if (error) throw error
+  },
+
+  isOnWatchlist: async (tmdbId) => {
+    const { data } = await supabase
+      .from('watchlist')
+      .select('id')
+      .eq('tmdb_id', tmdbId)
+      .maybeSingle()
+    return !!data
+  },
+
+  getStats: async () => {
+    const { data, error } = await supabase
+      .from('watchlist')
+      .select('*')
+    if (error) throw error
+
+    const genreCounts = {}
+    const langCounts = {}
+    const countryCounts = {}
+
+    data.forEach(s => {
+      (s.genres || []).forEach(g => {
+        genreCounts[g.name] = (genreCounts[g.name] || 0) + 1
+      })
+      if (s.original_language) {
+        langCounts[s.original_language] = (langCounts[s.original_language] || 0) + 1
+      }
+      (s.origin_country || []).forEach(c => {
+        countryCounts[c] = (countryCounts[c] || 0) + 1
+      })
+    })
+
+    return {
+      total: data.length,
+      genreCounts,
+      langCounts,
+      countryCounts,
+    }
+  },
+}

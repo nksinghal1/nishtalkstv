@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   Home, Tv, CheckCircle, XCircle, BarChart2,
-  Tag, Network
+  Tag, Network, Bookmark
 } from 'lucide-react'
 
 // Simple Instagram SVG since lucide-react 0.383 doesn't export it
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { to: '/dropped', icon: XCircle, label: 'Dropped' },
   { to: '/map', icon: Network, label: 'Show Map' },
   { to: '/tags', icon: Tag, label: 'Tags' },
+  { to: '/watchlist', icon: Bookmark, label: 'Watchlist' },
   { to: '/stats', icon: BarChart2, label: 'Stats' },
 ]
 
