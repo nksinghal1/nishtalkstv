@@ -19,6 +19,14 @@ const COUNTRY_NAMES = {
   PL:'Poland',PT:'Portugal',AR:'Argentina',RU:'Russia',CN:'China',
   BE:'Belgium',AT:'Austria',FI:'Finland',IE:'Ireland',NZ:'New Zealand',
   ZA:'South Africa',TH:'Thailand',CO:'Colombia',CY:'Cyprus',
+  CZ:'Czech Republic',LU:'Luxembourg',SI:'Slovenia',HR:'Croatia',
+  BA:'Bosnia',MK:'North Macedonia',AL:'Albania',BG:'Bulgaria',
+  UA:'Ukraine',LT:'Lithuania',LV:'Latvia',EE:'Estonia',CH:'Switzerland',
+  SG:'Singapore',HK:'Hong Kong',TW:'Taiwan',PK:'Pakistan',
+  NG:'Nigeria',EG:'Egypt',MA:'Morocco',SA:'Saudi Arabia',AE:'UAE',
+  LB:'Lebanon',IR:'Iran',CL:'Chile',PE:'Peru',VE:'Venezuela',
+  GT:'Guatemala',CU:'Cuba',JM:'Jamaica',VN:'Vietnam',PH:'Philippines',
+  ID:'Indonesia',MY:'Malaysia',SK:'Slovakia',
 }
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
@@ -258,8 +266,8 @@ export default function Home() {
         <div className="home-map-canvas">
           <ComposableMap
             projection="geoMercator"
-            projectionConfig={{ scale: 130, center: [0, 20] }}
-            style={{ width: '100%', height: '360px' }}
+            projectionConfig={{ scale: 140, center: [10, 15] }}
+            style={{ width: '100%', height: '420px' }}
           >
             <ZoomableGroup>
               <Geographies geography={GEO_URL}>
@@ -268,8 +276,18 @@ export default function Home() {
                     const alpha2 = Object.entries(ISO2_TO_NUMERIC).find(([, n]) => n === String(geo.id))?.[0]
                     const count = alpha2 ? (countryMap[alpha2]?.length || 0) : 0
                     const maxCount = countryData[0]?.[1]?.length || 1
-                    const intensity = count > 0 ? Math.max(0.25, Math.min(1, count / maxCount)) : 0
-                    const fill = count > 0 ? `rgba(92,142,230,${intensity})` : '#1C1C1C'
+                    // Color scale: grey → teal → blue → gold based on count
+                    let fill = '#1C1C1C'
+                    if (count > 0) {
+                      const t = Math.min(1, count / maxCount)
+                      if (t < 0.05) fill = '#1A4A5A'
+                      else if (t < 0.15) fill = '#0E7490'
+                      else if (t < 0.3) fill = '#0284C7'
+                      else if (t < 0.5) fill = '#2563EB'
+                      else if (t < 0.7) fill = '#7C3AED'
+                      else if (t < 0.9) fill = '#DB2777'
+                      else fill = '#DC2626'
+                    }
                     return (
                       <Geography
                         key={geo.rsmKey}
@@ -283,7 +301,7 @@ export default function Home() {
                         })}
                         style={{
                           default: { outline: 'none' },
-                          hover: { fill: count > 0 ? '#5C8EE6' : '#262626', outline: 'none', cursor: count > 0 ? 'pointer' : 'default' },
+                          hover: { fill: count > 0 ? '#F59E0B' : '#2A2A2A', outline: 'none', cursor: count > 0 ? 'pointer' : 'default' },
                           pressed: { outline: 'none' },
                         }}
                       />
@@ -293,6 +311,19 @@ export default function Home() {
               </Geographies>
             </ZoomableGroup>
           </ComposableMap>
+          <div className="home-map-legend">
+            <span className="home-map-legend-label">Fewer</span>
+            <div className="home-map-legend-scale">
+              <div style={{background:'#1A4A5A'}}/>
+              <div style={{background:'#0E7490'}}/>
+              <div style={{background:'#0284C7'}}/>
+              <div style={{background:'#2563EB'}}/>
+              <div style={{background:'#7C3AED'}}/>
+              <div style={{background:'#DB2777'}}/>
+              <div style={{background:'#DC2626'}}/>
+            </div>
+            <span className="home-map-legend-label">More</span>
+          </div>
         </div>
       </div>
 
