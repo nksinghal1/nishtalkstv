@@ -416,3 +416,35 @@
   flex: 1;
   border-radius: 2px;
 }
+
+/* Side by side map + graph */
+.home-visual-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.home-map-section, .home-graph-section {
+  overflow: hidden;
+}
+
+.home-graph-section:hover {
+  border-color: var(--blue-accent);
+}
+
+.home-graph-canvas {
+  background: #111318;
+  height: 320px;
+  overflow: hidden;
+}
+
+.home-map-canvas {
+  background: #111318;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .home-visual-row {
+    grid-template-columns: 1fr;
+  }
+}
