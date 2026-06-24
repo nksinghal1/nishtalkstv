@@ -3,7 +3,6 @@ import Sidebar from './components/layout/Sidebar'
 import Home from './pages/Home'
 import Shows from './pages/Shows'
 import Tags from './pages/Tags'
-import Stats from './pages/Stats'
 import ShowMap from './pages/ShowMap'
 import Watchlist from './pages/Watchlist'
 import Discover from './pages/Discover'
@@ -24,7 +23,6 @@ export default function App() {
               <Route path="/dropped" element={<Shows statusFilter="dropped" />} />
               <Route path="/map" element={<ShowMap />} />
               <Route path="/tags" element={<Tags />} />
-              <Route path="/stats" element={<Stats />} />
               <Route path="/watchlist" element={<Watchlist />} />
               <Route path="/discover" element={<Discover />} />
             </Routes>

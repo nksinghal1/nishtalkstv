@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  Home, Tv, CheckCircle, XCircle, BarChart2,
+  Home, Tv, CheckCircle, XCircle,
   Tag, Network, Bookmark, Menu, X, Compass
 } from 'lucide-react'
 import './Sidebar.css'
@@ -23,7 +23,6 @@ const NAV_ITEMS = [
   { to: '/discover', icon: Compass, label: 'Discover' },
   { to: '/map', icon: Network, label: 'Show Map' },
   { to: '/tags', icon: Tag, label: 'Tags' },
-  { to: '/stats', icon: BarChart2, label: 'Stats' },
 ]
 
 export default function Sidebar() {
