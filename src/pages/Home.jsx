@@ -21,6 +21,17 @@ const COUNTRY_NAMES = {
   ZA:'South Africa',TH:'Thailand',CO:'Colombia',CY:'Cyprus',
 }
 
+const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
+
+const ISO2_TO_NUMERIC = {
+  US:'840',GB:'826',KR:'410',JP:'392',FR:'250',DE:'276',IT:'380',
+  ES:'724',AU:'036',CA:'124',IN:'356',BR:'076',MX:'484',DK:'208',
+  SE:'752',NO:'578',NL:'528',BE:'056',IL:'376',TR:'792',AR:'032',
+  CO:'170',PT:'620',PL:'616',RU:'643',CN:'156',TH:'764',ZA:'710',
+  NZ:'554',IE:'372',AT:'040',FI:'246',CZ:'203',HU:'348',RO:'642',
+  GR:'300',RS:'688',IS:'352',CY:'196',
+}
+
 // ─── STAT CARD ────────────────────────────────────────────────────
 function StatCard({ label, value, sub, active, onClick }) {
   return (
