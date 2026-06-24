@@ -13,10 +13,26 @@ const GENRES = [
 ]
 
 const COUNTRY_NAMES = {
-  US:'United States',GB:'United Kingdom',KR:'South Korea',JP:'Japan',
-  FR:'France',DE:'Germany',IT:'Italy',ES:'Spain',AU:'Australia',
-  CA:'Canada',IN:'India',BR:'Brazil',MX:'Mexico',DK:'Denmark',
-  SE:'Sweden',NO:'Norway',NL:'Netherlands',IL:'Israel',TR:'Turkey',
+  US: 'United States', GB: 'United Kingdom', KR: 'South Korea', JP: 'Japan',
+  FR: 'France', DE: 'Germany', IT: 'Italy', ES: 'Spain', AU: 'Australia',
+  CA: 'Canada', IN: 'India', BR: 'Brazil', MX: 'Mexico', DK: 'Denmark',
+  SE: 'Sweden', NO: 'Norway', NL: 'Netherlands', BE: 'Belgium', IL: 'Israel',
+  TR: 'Turkey', AR: 'Argentina', CO: 'Colombia', PT: 'Portugal', PL: 'Poland',
+  RU: 'Russia', CN: 'China', TH: 'Thailand', ZA: 'South Africa', NZ: 'New Zealand',
+  IE: 'Ireland', AT: 'Austria', FI: 'Finland', CZ: 'Czech Republic', HU: 'Hungary',
+  RO: 'Romania', CY: 'Cyprus', IS: 'Iceland', SR: 'Suriname', EL: 'Greece',
+  GR: 'Greece', RS: 'Serbia', LU: 'Luxembourg', SK: 'Slovakia', SI: 'Slovenia',
+  HR: 'Croatia', BA: 'Bosnia', MK: 'North Macedonia', AL: 'Albania',
+  BG: 'Bulgaria', UA: 'Ukraine', LT: 'Lithuania', LV: 'Latvia', EE: 'Estonia',
+  CH: 'Switzerland', SG: 'Singapore', HK: 'Hong Kong', TW: 'Taiwan',
+  PK: 'Pakistan', BD: 'Bangladesh', NG: 'Nigeria', EG: 'Egypt', MA: 'Morocco',
+  SA: 'Saudi Arabia', AE: 'UAE', QA: 'Qatar', KW: 'Kuwait', LB: 'Lebanon',
+  JO: 'Jordan', PS: 'Palestine', IR: 'Iran', IQ: 'Iraq', SY: 'Syria',
+  CL: 'Chile', PE: 'Peru', VE: 'Venezuela', EC: 'Ecuador', BO: 'Bolivia',
+  PY: 'Paraguay', UY: 'Uruguay', CR: 'Costa Rica', PA: 'Panama', GT: 'Guatemala',
+  CU: 'Cuba', DO: 'Dominican Republic', PR: 'Puerto Rico', JM: 'Jamaica',
+  JP: 'Japan', KR: 'South Korea', KP: 'North Korea', VN: 'Vietnam',
+  PH: 'Philippines', ID: 'Indonesia', MY: 'Malaysia', MM: 'Myanmar',
 }
 
 export default function Watchlist() {
