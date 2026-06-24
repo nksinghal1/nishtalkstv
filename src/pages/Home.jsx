@@ -298,7 +298,6 @@ export default function Home() {
 
       {/* Two lists */}
       <div className="home-lists">
-        <ShowList title="Recently Watched" shows={recent} onShowClick={setSelectedShow}/>
         <ShowList title="Top Rated" shows={topRated} onShowClick={setSelectedShow}/>
         <ShowList title="Underrated Gems" shows={underrated} onShowClick={setSelectedShow} emptyMsg="Shows you rated 8+ that TMDB has at 7 or below."/>
       </div>
