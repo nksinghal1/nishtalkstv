@@ -374,10 +374,9 @@
 }
 
 .home-map-canvas {
-  background: #0D1117;
-  cursor: grab;
+  background: #111318;
+  overflow: hidden;
 }
-.home-map-canvas:active { cursor: grabbing; }
 
 /* Two col lists */
 .home-lists {

@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase'
 import ShowDetailSidebar from '../components/shows/ShowDetailSidebar'
 import LogShowModal from '../components/shows/LogShowModal'
 import { tmdb, RATING_LABELS, getLanguageName } from '../lib/tmdb'
-import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps'
+import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 import './Home.css'
 
 const COUNTRY_NAMES = {
