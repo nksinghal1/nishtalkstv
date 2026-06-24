@@ -261,32 +261,35 @@ export default function Home() {
       <div className="home-map-section card">
         <div className="home-map-header">
           <h3>Countries Watched</h3>
-          <span className="mono" style={{color:'var(--text-muted)',fontSize:'0.875rem'}}>{countryData.length} countries</span>
+          <div style={{display:'flex',alignItems:'center',gap:'1rem'}}>
+            <span style={{fontSize:'0.75rem',color:'var(--text-muted)'}}>Scroll to zoom · drag to pan · click country</span>
+            <span className="mono" style={{color:'var(--text-muted)',fontSize:'0.875rem'}}>{countryData.length} countries</span>
+          </div>
         </div>
         <div className="home-map-canvas">
           <ComposableMap
             projection="geoMercator"
             projectionConfig={{ scale: 140, center: [10, 15] }}
-            style={{ width: '100%', height: '420px' }}
+            style={{ width: '100%', height: '460px' }}
           >
-            <ZoomableGroup>
+            <ZoomableGroup minZoom={1} maxZoom={8} zoom={1}>
               <Geographies geography={GEO_URL}>
                 {({ geographies }) =>
                   geographies.map(geo => {
                     const alpha2 = Object.entries(ISO2_TO_NUMERIC).find(([, n]) => n === String(geo.id))?.[0]
                     const count = alpha2 ? (countryMap[alpha2]?.length || 0) : 0
                     const maxCount = countryData[0]?.[1]?.length || 1
-                    // Color scale: grey → teal → blue → gold based on count
-                    let fill = '#1C1C1C'
+                    // Logarithmic scale so small differences are visible
+                    let fill = '#1A1A2E'
                     if (count > 0) {
-                      const t = Math.min(1, count / maxCount)
-                      if (t < 0.05) fill = '#1A4A5A'
-                      else if (t < 0.15) fill = '#0E7490'
-                      else if (t < 0.3) fill = '#0284C7'
-                      else if (t < 0.5) fill = '#2563EB'
-                      else if (t < 0.7) fill = '#7C3AED'
-                      else if (t < 0.9) fill = '#DB2777'
-                      else fill = '#DC2626'
+                      const t = Math.min(1, Math.log(count + 1) / Math.log(maxCount + 1))
+                      if (t < 0.15)      fill = '#164E63'
+                      else if (t < 0.3)  fill = '#0369A1'
+                      else if (t < 0.45) fill = '#0EA5E9'
+                      else if (t < 0.6)  fill = '#6366F1'
+                      else if (t < 0.75) fill = '#A855F7'
+                      else if (t < 0.9)  fill = '#EC4899'
+                      else               fill = '#EF4444'
                     }
                     return (
                       <Geography
@@ -314,13 +317,13 @@ export default function Home() {
           <div className="home-map-legend">
             <span className="home-map-legend-label">Fewer</span>
             <div className="home-map-legend-scale">
-              <div style={{background:'#1A4A5A'}}/>
-              <div style={{background:'#0E7490'}}/>
-              <div style={{background:'#0284C7'}}/>
-              <div style={{background:'#2563EB'}}/>
-              <div style={{background:'#7C3AED'}}/>
-              <div style={{background:'#DB2777'}}/>
-              <div style={{background:'#DC2626'}}/>
+              <div style={{background:'#164E63'}}/>
+              <div style={{background:'#0369A1'}}/>
+              <div style={{background:'#0EA5E9'}}/>
+              <div style={{background:'#6366F1'}}/>
+              <div style={{background:'#A855F7'}}/>
+              <div style={{background:'#EC4899'}}/>
+              <div style={{background:'#EF4444'}}/>
             </div>
             <span className="home-map-legend-label">More</span>
           </div>
