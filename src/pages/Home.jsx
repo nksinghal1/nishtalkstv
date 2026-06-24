@@ -109,7 +109,11 @@ export default function Home() {
 
   // Derive lists
   const completed = allShows.filter(s => s.watch_status === 'completed')
-  const recent = [...completed].sort((a,b) => new Date(b.date_watched) - new Date(a.date_watched)).slice(0, 20)
+  const recent = [...completed].sort((a,b) => {
+    const dateA = new Date(a.date_watched_override || a.date_watched)
+    const dateB = new Date(b.date_watched_override || b.date_watched)
+    return dateB - dateA
+  }).slice(0, 20)
   const topRated = [...completed].filter(s => s.rating).sort((a,b) => b.rating - a.rating || (b.tmdb_rating||0) - (a.tmdb_rating||0)).slice(0, 20)
   const underrated = [...completed].filter(s => s.rating && s.tmdb_rating && s.rating >= 8 && s.tmdb_rating <= 7.0)
     .sort((a,b) => (b.rating - (b.tmdb_rating||0)) - (a.rating - (a.tmdb_rating||0))).slice(0, 20)
