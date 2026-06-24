@@ -141,13 +141,22 @@ export const tagsApi = {
     return data
   },
 
-  setShowTags: async (showId, tagNames) => {
+  setShowTags: async (showId, tagNames, showData = null) => {
     // Delete existing
     await supabase.from('show_tags').delete().eq('show_id', showId)
-    if (!tagNames.length) return
+
+    // Build auto-tags from show metadata
+    const autoTags = []
+    if (showData) {
+      if (showData.number_of_episodes >= 100) autoTags.push('long-show')
+      if (showData.number_of_episodes < 10 && showData.number_of_seasons === 1) autoTags.push('mini-series')
+    }
+
+    const allTags = [...new Set([...tagNames, ...autoTags])]
+    if (!allTags.length) return
 
     // Upsert all tags
-    const tags = await Promise.all(tagNames.map(tagsApi.upsertTag))
+    const tags = await Promise.all(allTags.map(tagsApi.upsertTag))
 
     // Insert junctions
     const { error } = await supabase.from('show_tags').insert(

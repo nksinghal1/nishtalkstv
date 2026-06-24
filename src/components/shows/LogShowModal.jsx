@@ -202,7 +202,7 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
       await watchlistApi.remove(showRecord.tmdb_id).catch(() => {})
 
       // Tags
-      await tagsApi.setShowTags(showRecord.id, tags)
+      await tagsApi.setShowTags(showRecord.id, tags, showRecord)
 
       // Similarities — delete removed ones, add new ones
       if (isEdit) {
