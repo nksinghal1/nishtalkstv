@@ -352,3 +352,38 @@
 
   .home-genre-name { width: 120px; font-size: 0.8125rem; }
 }
+
+/* World map */
+.home-map-section {
+  overflow: hidden;
+}
+
+.home-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.home-map-header h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.home-map-canvas {
+  background: var(--bg-primary);
+}
+
+/* Two col lists */
+.home-lists {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 768px) {
+  .home-lists {
+    grid-template-columns: 1fr;
+  }
+}

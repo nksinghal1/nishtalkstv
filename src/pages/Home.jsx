@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import ShowDetailSidebar from '../components/shows/ShowDetailSidebar'
 import LogShowModal from '../components/shows/LogShowModal'
 import { tmdb, RATING_LABELS, getLanguageName } from '../lib/tmdb'
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps'
 import './Home.css'
 
 const COUNTRY_NAMES = {
@@ -109,11 +110,6 @@ export default function Home() {
 
   // Derive lists
   const completed = allShows.filter(s => s.watch_status === 'completed')
-  const recent = [...completed].sort((a,b) => {
-    const dateA = new Date(a.date_watched_override || a.date_watched)
-    const dateB = new Date(b.date_watched_override || b.date_watched)
-    return dateB - dateA
-  }).slice(0, 20)
   const topRated = [...completed].filter(s => s.rating).sort((a,b) => b.rating - a.rating || (b.tmdb_rating||0) - (a.tmdb_rating||0)).slice(0, 20)
   const underrated = [...completed].filter(s => s.rating && s.tmdb_rating && s.rating >= 8 && s.tmdb_rating <= 7.0)
     .sort((a,b) => (b.rating - (b.tmdb_rating||0)) - (a.rating - (a.tmdb_rating||0))).slice(0, 20)
@@ -242,7 +238,54 @@ export default function Home() {
         </div>
       )}
 
-      {/* Three lists */}
+      {/* World Map */}
+      <div className="home-map-section card">
+        <div className="home-map-header">
+          <h3>Countries Watched</h3>
+          <span className="mono" style={{color:'var(--text-muted)',fontSize:'0.875rem'}}>{countryData.length} countries</span>
+        </div>
+        <div className="home-map-canvas">
+          <ComposableMap
+            projection="geoMercator"
+            projectionConfig={{ scale: 130, center: [0, 20] }}
+            style={{ width: '100%', height: '360px' }}
+          >
+            <ZoomableGroup>
+              <Geographies geography={GEO_URL}>
+                {({ geographies }) =>
+                  geographies.map(geo => {
+                    const alpha2 = Object.entries(ISO2_TO_NUMERIC).find(([, n]) => n === String(geo.id))?.[0]
+                    const count = alpha2 ? (countryMap[alpha2]?.length || 0) : 0
+                    const maxCount = countryData[0]?.[1]?.length || 1
+                    const intensity = count > 0 ? Math.max(0.25, Math.min(1, count / maxCount)) : 0
+                    const fill = count > 0 ? `rgba(92,142,230,${intensity})` : '#1C1C1C'
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        fill={fill}
+                        stroke="#0B0B0B"
+                        strokeWidth={0.5}
+                        onClick={() => alpha2 && countryMap[alpha2] && setDrillPanel({
+                          title: `${COUNTRY_NAMES[alpha2]||alpha2} Shows`,
+                          shows: countryMap[alpha2].filter(s=>s.watch_status)
+                        })}
+                        style={{
+                          default: { outline: 'none' },
+                          hover: { fill: count > 0 ? '#5C8EE6' : '#262626', outline: 'none', cursor: count > 0 ? 'pointer' : 'default' },
+                          pressed: { outline: 'none' },
+                        }}
+                      />
+                    )
+                  })
+                }
+              </Geographies>
+            </ZoomableGroup>
+          </ComposableMap>
+        </div>
+      </div>
+
+      {/* Two lists */}
       <div className="home-lists">
         <ShowList title="Recently Watched" shows={recent} onShowClick={setSelectedShow}/>
         <ShowList title="Top Rated" shows={topRated} onShowClick={setSelectedShow}/>
