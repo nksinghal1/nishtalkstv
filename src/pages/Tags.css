@@ -244,3 +244,14 @@
   flex-shrink: 0;
   font-size: 0.7rem;
 }
+
+@media (max-width: 768px) {
+  .tags-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tags-sidebar {
+    position: static;
+    max-height: 300px;
+  }
+}

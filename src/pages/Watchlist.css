@@ -208,3 +208,19 @@
   color: var(--text-muted);
   margin-top: 0.2rem;
 }
+
+@media (max-width: 768px) {
+  .watchlist-stats-strip {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .watchlist-controls {
+    flex-wrap: wrap;
+  }
+
+  .wl-search-wrap {
+    max-width: 100%;
+    flex: 1;
+  }
+}

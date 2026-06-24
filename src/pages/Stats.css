@@ -325,3 +325,28 @@
   overflow: hidden;
   border: 1px solid var(--border);
 }
+
+@media (max-width: 768px) {
+  .stats-hero-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .stats-hero-value {
+    font-size: 1.5rem;
+  }
+
+  .stats-panel-inner {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .stats-list-label {
+    width: 120px;
+    font-size: 0.8125rem;
+  }
+
+  .stats-shows-list {
+    max-height: 400px;
+  }
+}
