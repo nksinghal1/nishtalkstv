@@ -30,6 +30,10 @@ export const tmdb = {
   // Get shows similar to a given show (TMDB's own suggestions - for discovery)
   getSimilar: (tmdbId) =>
     tmdbFetch(`/tv/${tmdbId}/similar`),
+
+  // Discover shows with filters
+  discoverShows: (params = {}) =>
+    tmdbFetch('/discover/tv', params),
 }
 
 // Rating labels for 1-10 scale

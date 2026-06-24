@@ -1,0 +1,257 @@
+/* ─── SETUP SCREEN ──────────────────────────────────────────────── */
+.discover-setup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+}
+
+.discover-setup-inner {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.discover-setup-icon {
+  font-size: 3rem;
+}
+
+.discover-setup-inner h2 {
+  font-size: 1.5rem;
+}
+
+.discover-setup-inner p {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.discover-setup-filters {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.discover-start-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+/* ─── LOADING / DONE ────────────────────────────────────────────── */
+.discover-loading, .discover-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  text-align: center;
+}
+
+.discover-loading p, .discover-done p {
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.discover-done-icon { font-size: 3rem; }
+
+.discover-done-stats {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* ─── BROWSE MODE ───────────────────────────────────────────────── */
+.discover-browse {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.discover-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.discover-session-stats {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Show card */
+.discover-show-card {
+  overflow: hidden;
+}
+
+.dsc-backdrop {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+}
+
+.dsc-backdrop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dsc-backdrop-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(transparent, var(--bg-secondary));
+}
+
+.dsc-content {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dsc-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.dsc-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.dsc-year {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.dsc-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.dsc-info-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dsc-info-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+.dsc-info-value {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.dsc-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.dsc-overview {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* Action buttons */
+.discover-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.discover-btn-skip, .discover-btn-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.discover-btn-skip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.discover-btn-skip:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(192,57,43,0.08);
+}
+
+.discover-btn-add {
+  background: var(--blue-primary);
+  border: 1px solid var(--blue-accent);
+  color: var(--text-primary);
+}
+
+.discover-btn-add:hover {
+  background: var(--blue-accent);
+}
+
+.discover-btn-add:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .discover-browse {
+    max-width: 100%;
+  }
+
+  .dsc-backdrop {
+    height: 220px;
+  }
+
+  .dsc-title {
+    font-size: 1.25rem;
+  }
+
+  .discover-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-primary);
+    padding: 1rem 0;
+    margin-top: 0;
+  }
+}

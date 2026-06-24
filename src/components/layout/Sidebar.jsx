@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   Home, Tv, CheckCircle, XCircle, BarChart2,
-  Tag, Network, Bookmark, Menu, X
+  Tag, Network, Bookmark, Menu, X, Compass
 } from 'lucide-react'
 import './Sidebar.css'
 
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { to: '/completed', icon: CheckCircle, label: 'Completed' },
   { to: '/dropped', icon: XCircle, label: 'Dropped' },
   { to: '/watchlist', icon: Bookmark, label: 'Watchlist' },
+  { to: '/discover', icon: Compass, label: 'Discover' },
   { to: '/map', icon: Network, label: 'Show Map' },
   { to: '/tags', icon: Tag, label: 'Tags' },
   { to: '/stats', icon: BarChart2, label: 'Stats' },
