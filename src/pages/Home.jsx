@@ -39,7 +39,7 @@ function StatCard({ label, value, sub, active, onClick, colorIdx }) {
     <button
       className={`home-stat-card ${active ? 'active' : ''}`}
       onClick={onClick}
-      style={{ '--stat-bg': c.bg, '--stat-border': c.border, '--stat-val': c.val }}
+      style={{ '--stat-val': c.val }}
     >
       <span className="home-stat-value mono">{value}</span>
       <span className="home-stat-label">{label}</span>
@@ -178,11 +178,11 @@ export default function Home() {
       {stats && (
         <div className="home-stats-row">
           {[
-            { key:'shows', label:'Shows Logged', value:stats.total, sub:`${stats.completed} completed` },
-            { key:'episodes', label:'Episodes', value:stats.totalEpisodes.toLocaleString(), sub:`avg ${stats.avgRating||'—'}/10` },
-            { key:'genres', label:'Genres', value:genreData.length, sub:'genres watched' },
-            { key:'languages', label:'Languages', value:langData.length, sub:'languages' },
-            { key:'countries', label:'Countries', value:countryData.length, sub:'countries' },
+            { key:'shows', label:'Shows Logged', value:stats.total, sub:`${stats.completed} completed · ${stats.dropped} dropped` },
+            { key:'episodes', label:'Episodes Watched', value:stats.totalEpisodes.toLocaleString(), sub:`avg rating ${stats.avgRating||'—'}/10` },
+            { key:'genres', label:'Genres', value:genreData.length, sub:`across ${stats.completed} shows` },
+            { key:'languages', label:'Languages', value:langData.length, sub:`click to explore` },
+            { key:'countries', label:'Countries', value:countryData.length, sub:`click to explore` },
           ].map(({ key, label, value, sub }, i) => (
             <StatCard key={key} label={label} value={value} sub={sub} colorIdx={i} active={activePanel===key} onClick={()=>togglePanel(key)}/>
           ))}

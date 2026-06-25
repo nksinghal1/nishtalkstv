@@ -41,8 +41,8 @@
 }
 
 .home-stat-card {
-  background: var(--stat-bg, rgba(14,14,20,0.8));
-  border: 1px solid var(--stat-border, var(--border));
+  background: rgba(14,14,20,0.9);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.125rem 1rem;
   display: flex;
@@ -56,29 +56,31 @@
   backdrop-filter: blur(12px);
 }
 
+/* Thin colored top border only */
 .home-stat-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--stat-val, rgba(107,163,245,0.3)), transparent);
+  height: 2px;
+  background: var(--stat-val, rgba(107,163,245,0.6));
+  opacity: 0.6;
 }
 
 .home-stat-card:hover {
   transform: translateY(-3px) scale(1.01);
-  border-color: var(--stat-border, rgba(107,163,245,0.3));
+  border-color: var(--border-hover);
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
 
 .home-stat-card.active {
   transform: translateY(-2px);
-  border-color: var(--stat-border, rgba(107,163,245,0.4));
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  border-color: var(--border-hover);
+  background: rgba(14,14,20,0.95);
 }
 
 .home-stat-value {
   font-size: 1.875rem;
-  color: var(--stat-val, var(--text-primary));
+  color: var(--text-primary);
   line-height: 1;
   font-weight: 400;
   font-family: var(--font-mono);
