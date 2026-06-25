@@ -6,6 +6,7 @@ import Tags from './pages/Tags'
 import ShowMap from './pages/ShowMap'
 import Watchlist from './pages/Watchlist'
 import Discover from './pages/Discover'
+import ShowCast from './pages/ShowCast'
 import { AuthProvider } from './lib/auth'
 import './styles/globals.css'
 
@@ -25,6 +26,7 @@ export default function App() {
               <Route path="/tags" element={<Tags />} />
               <Route path="/watchlist" element={<Watchlist />} />
               <Route path="/discover" element={<Discover />} />
+              <Route path="/showcast" element={<ShowCast />} />
             </Routes>
           </main>
         </div>
