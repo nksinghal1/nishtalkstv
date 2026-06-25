@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Plus, Sparkles, ChevronRight, Check, Copy, RotateCcw } from 'lucide-react'
+import { Search, X, Plus, Sparkles, ChevronRight, Check, Copy, RotateCcw, ChevronDown, Flag } from 'lucide-react'
 import { tmdb, getLanguageName, RATING_LABELS } from '../lib/tmdb'
 import { supabase } from '../lib/supabase'
 import './ShowCast.css'
 
+const BATCH_SIZE = 12
+
 // ─── SCORING ─────────────────────────────────────────────────────
-async function scoreShows(inputShows) {
-  // Get all shows, logs, tags, similarity links from DB
+async function buildScores(inputShows, savedShows = []) {
   const [showsRes, tagsRes, linksRes] = await Promise.all([
     supabase.from('shows_with_logs').select('*').not('watch_status', 'is', null),
     supabase.from('show_tags').select('show_id, tags(name)'),
@@ -17,67 +18,59 @@ async function scoreShows(inputShows) {
   const allTagRows = tagsRes.data || []
   const allLinks = linksRes.data || []
 
-  // Build tag map: show_id -> Set of tag names
   const showTagMap = {}
   allTagRows.forEach(row => {
     if (!showTagMap[row.show_id]) showTagMap[row.show_id] = new Set()
     if (row.tags?.name) showTagMap[row.show_id].add(row.tags.name)
   })
 
-  // Input show IDs (those that are in our DB)
-  const inputDbIds = new Set(inputShows.filter(s => s.dbShow).map(s => s.dbShow.id))
+  // All "seed" shows = inputs + things user has already saved
+  const seedIds = new Set([
+    ...inputShows.filter(s => s.dbShow).map(s => s.dbShow.id),
+    ...savedShows.map(s => s.show.id),
+  ])
   const inputTmdbIds = new Set(inputShows.map(s => s.tmdbId))
 
-  // Build tag union of all input shows
   const inputTagUnion = new Set()
-  inputShows.forEach(s => {
-    if (s.dbShow) {
-      const tags = showTagMap[s.dbShow.id] || new Set()
-      tags.forEach(t => inputTagUnion.add(t))
-    }
+  seedIds.forEach(id => {
+    const show = allShows.find(s => s.id === id)
+    if (show) (show.genres || []).forEach(g => inputTagUnion.add(g.name))
+    const tags = showTagMap[id] || new Set()
+    tags.forEach(t => inputTagUnion.add(t))
   })
 
-  // Score each candidate
   const scored = []
   for (const show of allShows) {
-    // Skip input shows
-    if (inputDbIds.has(show.id) || inputTmdbIds.has(show.tmdb_id)) continue
+    if (seedIds.has(show.id) || inputTmdbIds.has(show.tmdb_id)) continue
 
     let score = 0
-    const reasons = [] // { inputShowTitle, explanation }
+    const reasons = []
 
-    // Signal 1: direct similarity links (×3)
     for (const link of allLinks) {
-      const isLinked =
-        (link.show_a_id === show.id && inputDbIds.has(link.show_b_id)) ||
-        (link.show_b_id === show.id && inputDbIds.has(link.show_a_id))
+      const linkedSeedId =
+        link.show_a_id === show.id && seedIds.has(link.show_b_id) ? link.show_b_id :
+        link.show_b_id === show.id && seedIds.has(link.show_a_id) ? link.show_a_id : null
 
-      if (isLinked) {
-        score += 3
-        const linkedInputId = inputDbIds.has(link.show_b_id) ? link.show_b_id : link.show_a_id
-        const inputShow = inputShows.find(s => s.dbShow?.id === linkedInputId)
-        if (inputShow && link.explanation) {
-          reasons.push({
-            inputShowTitle: inputShow.title,
-            explanation: link.explanation,
-          })
-        } else if (inputShow) {
-          reasons.push({ inputShowTitle: inputShow.title, explanation: null })
+      if (linkedSeedId) {
+        // Extra weight if linked to a saved show (iterative learning)
+        const isSaved = savedShows.some(s => s.show.id === linkedSeedId)
+        score += isSaved ? 4 : 3
+
+        const inputShow = inputShows.find(s => s.dbShow?.id === linkedSeedId)
+        const savedShow = savedShows.find(s => s.show.id === linkedSeedId)
+        const sourceTitle = inputShow?.title || savedShow?.show?.title
+        if (sourceTitle) {
+          reasons.push({ inputShowTitle: sourceTitle, explanation: link.explanation || null })
         }
       }
     }
 
-    // Signal 2: tag overlap (×1)
     const showTags = showTagMap[show.id] || new Set()
     const sharedTags = [...showTags].filter(t => inputTagUnion.has(t))
     score += sharedTags.length
-
-    // Signal 3: TMDB rating bonus (×0.5)
     if (show.tmdb_rating >= 8) score += 0.5
 
-    if (score > 0) {
-      scored.push({ show, score, reasons, sharedTags })
-    }
+    if (score > 0) scored.push({ show, score, reasons, sharedTags })
   }
 
   return scored.sort((a, b) => b.score - a.score)
@@ -89,7 +82,7 @@ function InputScreen({ onSubmit }) {
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [selectedShows, setSelectedShows] = useState([])
-  const [dbCache, setDbCache] = useState({}) // tmdbId -> dbShow or null
+  const [dbCache, setDbCache] = useState({})
   const searchTimeout = useRef(null)
 
   useEffect(() => {
@@ -101,7 +94,6 @@ function InputScreen({ onSubmit }) {
         const res = await tmdb.searchShows(query)
         const shows = res.results?.slice(0, 6) || []
         setResults(shows)
-        // Check DB status for each
         const checks = await Promise.all(shows.map(async s => {
           const { data } = await supabase.from('shows').select('id,title,tmdb_id').eq('tmdb_id', s.id).maybeSingle()
           return [s.id, data]
@@ -139,7 +131,7 @@ function InputScreen({ onSubmit }) {
 
       <div className="showcast-search-box card">
         <div className="form-group">
-          <label className="form-label">Add shows you love</label>
+          <label className="form-label">Add shows you love — as many as you want</label>
           <div className="search-input-wrap">
             <Search size={15} className="search-icon"/>
             <input
@@ -159,13 +151,7 @@ function InputScreen({ onSubmit }) {
               const alreadyAdded = selectedShows.find(s => s.tmdbId === show.id)
               const inDb = dbCache[show.id]
               return (
-                <button
-                  key={show.id}
-                  className="search-result-item"
-                  onClick={() => !alreadyAdded && addShow(show)}
-                  disabled={!!alreadyAdded}
-                  style={{opacity: alreadyAdded ? 0.5 : 1}}
-                >
+                <button key={show.id} className="search-result-item" onClick={() => !alreadyAdded && addShow(show)} disabled={!!alreadyAdded} style={{opacity: alreadyAdded ? 0.5 : 1}}>
                   {show.poster_path && <img src={tmdb.posterUrl(show.poster_path,'w92')} alt={show.name} className="search-result-poster"/>}
                   <div style={{flex:1,textAlign:'left'}}>
                     <div className="search-result-title">{show.name}</div>
@@ -173,10 +159,8 @@ function InputScreen({ onSubmit }) {
                   </div>
                   {alreadyAdded
                     ? <Check size={14} style={{color:'var(--success)',flexShrink:0}}/>
-                    : inDb === undefined
-                    ? <div className="loading-spinner" style={{width:12,height:12}}/>
-                    : inDb
-                    ? <span className="showcast-in-db">✦ Logged</span>
+                    : inDb === undefined ? <div className="loading-spinner" style={{width:12,height:12}}/>
+                    : inDb ? <span className="showcast-in-db">✦ Logged</span>
                     : <span className="showcast-not-db">Not logged</span>
                   }
                 </button>
@@ -185,7 +169,6 @@ function InputScreen({ onSubmit }) {
           </div>
         )}
 
-        {/* Selected shows */}
         {selectedShows.length > 0 && (
           <div className="showcast-selected">
             <div className="form-label" style={{marginBottom:'0.5rem'}}>Your picks ({selectedShows.length})</div>
@@ -202,13 +185,8 @@ function InputScreen({ onSubmit }) {
           </div>
         )}
 
-        <button
-          className="btn btn-primary showcast-go-btn"
-          onClick={() => onSubmit(selectedShows)}
-          disabled={selectedShows.length === 0}
-        >
-          <Sparkles size={16}/> Find My Shows
-          <ChevronRight size={16}/>
+        <button className="btn btn-primary showcast-go-btn" onClick={() => onSubmit(selectedShows)} disabled={selectedShows.length === 0}>
+          <Sparkles size={16}/> Find My Shows <ChevronRight size={16}/>
         </button>
       </div>
     </div>
@@ -222,10 +200,19 @@ function SwipeCard({ result, onAdd, onSkip }) {
   const genres = show.genres || []
   const year = show.first_air_date?.slice(0,4)
 
+  // Dedupe reasons by inputShowTitle
+  const uniqueReasons = []
+  const seen = new Set()
+  for (const r of reasons) {
+    if (!seen.has(r.inputShowTitle)) {
+      seen.add(r.inputShowTitle)
+      uniqueReasons.push(r)
+    }
+  }
+
   return (
     <div className="showcast-card card">
       <div className="showcast-card-inner">
-        {/* Left: poster */}
         <div className="showcast-card-poster">
           {poster
             ? <img src={poster} alt={show.title}/>
@@ -236,9 +223,8 @@ function SwipeCard({ result, onAdd, onSkip }) {
           )}
         </div>
 
-        {/* Right: info */}
         <div className="showcast-card-body">
-          <div className="showcast-card-top">
+          <div>
             <h2 className="showcast-card-title">{show.title}</h2>
             <div className="showcast-card-meta">
               {year && <span className="mono">{year}</span>}
@@ -246,24 +232,19 @@ function SwipeCard({ result, onAdd, onSkip }) {
               {show.number_of_seasons && <span className="badge badge-muted mono">{show.number_of_seasons} seasons</span>}
             </div>
             <div className="showcast-card-meta" style={{marginTop:'0.25rem'}}>
-              {getLanguageName(show.original_language) && (
-                <span className="badge badge-muted">{getLanguageName(show.original_language)}</span>
-              )}
+              {getLanguageName(show.original_language) && <span className="badge badge-muted">{getLanguageName(show.original_language)}</span>}
               {genres.slice(0,3).map(g => <span key={g.id} className="badge badge-blue">{g.name}</span>)}
             </div>
           </div>
 
-          {show.overview && (
-            <p className="showcast-card-overview">{show.overview}</p>
-          )}
+          {show.overview && <p className="showcast-card-overview">{show.overview}</p>}
 
-          {/* Why recommended */}
-          {reasons.length > 0 && (
+          {uniqueReasons.length > 0 && (
             <div className="showcast-why">
               <div className="showcast-why-label">Why ShowCast picked this</div>
-              {reasons.slice(0, 3).map((r, i) => (
+              {uniqueReasons.slice(0,3).map((r, i) => (
                 <div key={i} className="showcast-why-item">
-                  <span className="showcast-why-show">↳ {r.inputShowTitle}</span>
+                  <span className="showcast-why-show">Because you like <strong>{r.inputShowTitle}</strong></span>
                   {r.explanation && <span className="showcast-why-reason">{r.explanation}</span>}
                 </div>
               ))}
@@ -275,7 +256,6 @@ function SwipeCard({ result, onAdd, onSkip }) {
             </div>
           )}
 
-          {/* Nish's take */}
           {show.rating && (
             <div className="showcast-nish-take">
               <div className="showcast-nish-label">Nish rated this</div>
@@ -286,23 +266,16 @@ function SwipeCard({ result, onAdd, onSkip }) {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="showcast-card-actions">
-        <button className="showcast-btn-skip" onClick={onSkip}>
-          <X size={20}/>
-          <span>Skip</span>
-        </button>
-        <button className="showcast-btn-add" onClick={onAdd}>
-          <Plus size={20}/>
-          <span>Add to My List</span>
-        </button>
+        <button className="showcast-btn-skip" onClick={onSkip}><X size={18}/> Skip</button>
+        <button className="showcast-btn-add" onClick={onAdd}><Plus size={18}/> Add to My List</button>
       </div>
     </div>
   )
 }
 
 // ─── RESULTS SCREEN ───────────────────────────────────────────────
-function ResultsScreen({ saved, onReset }) {
+function ResultsScreen({ saved, onReset, onLoadMore, hasMore, loadingMore }) {
   const [copied, setCopied] = useState(false)
 
   const copyToClipboard = () => {
@@ -319,7 +292,6 @@ function ResultsScreen({ saved, onReset }) {
       '',
       'Generated by ShowCast on nishtalkstv.vercel.app',
     ].join('\n')
-
     navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -332,7 +304,7 @@ function ResultsScreen({ saved, onReset }) {
         <h2>Your ShowCast</h2>
         <p>
           {saved.length === 0
-            ? "You skipped everything — that's okay, try different inputs."
+            ? "You skipped everything — try different inputs."
             : `Based on what you love, here's where we'd start. ${saved.length} show${saved.length > 1 ? 's' : ''} picked.`
           }
         </p>
@@ -364,13 +336,20 @@ function ResultsScreen({ saved, onReset }) {
                     {show.tmdb_rating && ` · TMDB ${show.tmdb_rating}`}
                     {show.rating && ` · Nish ${show.rating}/10`}
                   </div>
-                  {reasons[0]?.explanation && (
-                    <div className="showcast-saved-reason">↳ {reasons[0].explanation}</div>
-                  )}
+                  {reasons[0]?.explanation && <div className="showcast-saved-reason">{reasons[0].explanation}</div>}
                 </div>
               </div>
             )
           })}
+        </div>
+      )}
+
+      {hasMore && (
+        <div style={{textAlign:'center',marginTop:'1rem'}}>
+          <button className="btn btn-secondary" onClick={onLoadMore} disabled={loadingMore}>
+            {loadingMore ? 'Re-ranking based on your picks...' : <><ChevronDown size={15}/> Load More Recommendations</>}
+          </button>
+          {!loadingMore && <p style={{fontSize:'0.8rem',color:'var(--text-muted)',marginTop:'0.5rem'}}>Next batch is re-ranked based on what you just saved.</p>}
         </div>
       )}
     </div>
@@ -379,75 +358,128 @@ function ResultsScreen({ saved, onReset }) {
 
 // ─── MAIN ─────────────────────────────────────────────────────────
 export default function ShowCast() {
-  const [phase, setPhase] = useState('input') // input | loading | swiping | done
-  const [recommendations, setRecommendations] = useState([])
+  const [phase, setPhase] = useState('input')
+  const [inputShows, setInputShows] = useState([])
+  const [allResults, setAllResults] = useState([])
+  const [batchStart, setBatchStart] = useState(0)
+  const [currentBatch, setCurrentBatch] = useState([])
   const [currentIdx, setCurrentIdx] = useState(0)
   const [saved, setSaved] = useState([])
+  const [skipped, setSkipped] = useState(new Set())
+  const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
 
-  const handleSubmit = async (inputShows) => {
-    setPhase('loading')
+  const handleSubmit = async (selectedShows) => {
+    setLoading(true)
+    setInputShows(selectedShows)
     try {
-      const results = await scoreShows(inputShows)
-      setRecommendations(results)
+      const results = await buildScores(selectedShows, [])
+      setAllResults(results)
+      const batch = results.slice(0, BATCH_SIZE)
+      setCurrentBatch(batch)
+      setBatchStart(BATCH_SIZE)
       setCurrentIdx(0)
       setSaved([])
-      setPhase(results.length === 0 ? 'done' : 'swiping')
-    } catch(e) {
-      console.error(e)
-      setPhase('input')
-    }
+      setSkipped(new Set())
+      setPhase(batch.length === 0 ? 'done' : 'swiping')
+    } catch(e) { console.error(e) }
+    finally { setLoading(false) }
   }
 
   const handleAdd = () => {
-    setSaved(prev => [...prev, recommendations[currentIdx]])
+    setSaved(prev => [...prev, currentBatch[currentIdx]])
     advance()
   }
 
-  const handleSkip = () => advance()
+  const handleSkip = () => {
+    setSkipped(prev => new Set([...prev, currentBatch[currentIdx].show.id]))
+    advance()
+  }
 
   const advance = () => {
     const next = currentIdx + 1
-    if (next >= recommendations.length) setPhase('done')
+    if (next >= currentBatch.length) setPhase('done')
     else setCurrentIdx(next)
+  }
+
+  const handleStop = () => setPhase('done')
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true)
+    try {
+      // Re-score with saved shows included for iterative learning
+      const reScored = await buildScores(inputShows, saved)
+      // Filter already seen
+      const seenIds = new Set([
+        ...currentBatch.map(r => r.show.id),
+        ...saved.map(r => r.show.id),
+        ...skipped,
+      ])
+      const nextBatch = reScored.filter(r => !seenIds.has(r.show.id)).slice(0, BATCH_SIZE)
+      setAllResults(reScored)
+      setCurrentBatch(nextBatch)
+      setCurrentIdx(0)
+      setBatchStart(prev => prev + BATCH_SIZE)
+      setPhase(nextBatch.length === 0 ? 'done' : 'swiping')
+    } catch(e) { console.error(e) }
+    finally { setLoadingMore(false) }
   }
 
   const handleReset = () => {
     setPhase('input')
-    setRecommendations([])
+    setAllResults([])
+    setCurrentBatch([])
     setCurrentIdx(0)
     setSaved([])
+    setSkipped(new Set())
+    setInputShows([])
   }
+
+  const remainingCount = allResults.filter(r =>
+    !saved.find(s => s.show.id === r.show.id) &&
+    !skipped.has(r.show.id) &&
+    !currentBatch.find(c => c.show.id === r.show.id)
+  ).length
 
   if (phase === 'input') return <InputScreen onSubmit={handleSubmit}/>
 
-  if (phase === 'loading') return (
+  if (loading) return (
     <div className="showcast-loading">
       <div className="showcast-loading-icon">✦</div>
       <h2>Finding your shows...</h2>
-      <p>Analysing your taste across {' '}500+ shows and thousands of similarity links.</p>
+      <p>Analysing your taste across 500+ shows and thousands of similarity links.</p>
       <div className="loading-spinner" style={{width:32,height:32,marginTop:'1rem'}}/>
     </div>
   )
 
-  if (phase === 'swiping') return (
-    <div className="showcast-swiping">
-      <div className="showcast-progress">
-        <span className="mono showcast-progress-text">
-          {currentIdx + 1} / {recommendations.length}
-        </span>
-        <div className="showcast-progress-bar">
-          <div className="showcast-progress-fill" style={{width:`${((currentIdx)/recommendations.length)*100}%`}}/>
+  if (phase === 'swiping') {
+    const current = currentBatch[currentIdx]
+    return (
+      <div className="showcast-swiping">
+        <div className="showcast-progress">
+          <span className="mono showcast-progress-text">{currentIdx + 1} / {currentBatch.length}</span>
+          <div className="showcast-progress-bar">
+            <div className="showcast-progress-fill" style={{width:`${(currentIdx/currentBatch.length)*100}%`}}/>
+          </div>
+          <div style={{display:'flex',gap:'0.5rem',alignItems:'center'}}>
+            <span className="mono showcast-saved-count">{saved.length} saved</span>
+            <button className="btn btn-ghost btn-sm" onClick={handleStop} title="Stop and see results">
+              <Flag size={13}/> Done
+            </button>
+          </div>
         </div>
-        <span className="mono showcast-saved-count">{saved.length} saved</span>
+        <SwipeCard key={current.show.id} result={current} onAdd={handleAdd} onSkip={handleSkip}/>
       </div>
-      <SwipeCard
-        key={recommendations[currentIdx].show.id}
-        result={recommendations[currentIdx]}
-        onAdd={handleAdd}
-        onSkip={handleSkip}
-      />
-    </div>
-  )
+    )
+  }
 
-  return <ResultsScreen saved={saved} onReset={handleReset}/>
+  return (
+    <ResultsScreen
+      saved={saved}
+      onReset={handleReset}
+      onLoadMore={handleLoadMore}
+      hasMore={remainingCount > 0}
+      loadingMore={loadingMore}
+    />
+  )
 }

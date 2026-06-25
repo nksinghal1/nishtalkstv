@@ -183,18 +183,19 @@
 }
 
 .showcast-card-poster {
-  width: 180px;
+  width: 160px;
   flex-shrink: 0;
   position: relative;
   background: var(--bg-tertiary);
-  min-height: 280px;
+  align-self: flex-start;
 }
 
 .showcast-card-poster img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
+  aspect-ratio: 2/3;
+  object-fit: cover;
 }
 
 .showcast-no-poster {
