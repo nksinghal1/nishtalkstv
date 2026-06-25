@@ -249,11 +249,13 @@ export default function Tags() {
                 <div>
                   <h2 className="tag-content-heading">
                     #{selectedTag.name}
-                    <span className="mono tag-content-count">{taggedCount} shows</span>
                   </h2>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                    Tagged shows appear first. Click to toggle.
-                  </p>
+                  <div className="tag-content-subrow">
+                    <span className="badge badge-blue mono">{taggedCount} tagged</span>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                      Click to toggle tag
+                    </span>
+                  </div>
                 </div>
                 <div className="tags-show-search-wrap">
                   <Search size={14} className="tags-search-icon" />
