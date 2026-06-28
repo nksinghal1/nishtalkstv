@@ -104,6 +104,15 @@ async function buildScores(inputShows, savedShows = []) {
     if (hasDirectLink || sharedTags.length >= 2) scored.push({ show, score, reasons, sharedTags })
   }
 
+  console.log('=== SHOWCAST DEBUG ===')
+  console.log('seedIds:', [...seedIds])
+  console.log('allShows count:', allShows.length)
+  console.log('allLinks count:', allLinks.length)
+  console.log('inputTagUnion:', [...inputTagUnion])
+  const directLinks = scored.filter(r => r.reasons.length > 0)
+  const tagOnly = scored.filter(r => r.reasons.length === 0)
+  console.log('Results with direct links:', directLinks.length, directLinks.map(r => r.show.title))
+  console.log('Tag-only results:', tagOnly.length, tagOnly.slice(0,5).map(r => r.show.title))
   return scored.sort((a, b) => b.score - a.score)
 }
 
