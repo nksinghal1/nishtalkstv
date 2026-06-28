@@ -31,6 +31,11 @@ async function buildScores(inputShows, savedShows = []) {
   ])
   const inputTmdbIds = new Set(inputShows.map(s => s.tmdbId))
 
+  // Also build tmdbId -> inputShow map for better reason lookup
+  const tmdbToInputShow = {}
+  inputShows.forEach(s => { if (s.dbShow) tmdbToInputShow[s.dbShow.id] = s })
+  savedShows.forEach(s => { tmdbToInputShow[s.show.id] = { title: s.show.title, dbShow: s.show } })
+
   const inputTagUnion = new Set()
   seedIds.forEach(id => {
     const show = allShows.find(s => s.id === id)
@@ -62,9 +67,8 @@ async function buildScores(inputShows, savedShows = []) {
         const isSaved = savedShows.some(s => s.show.id === linkedSeedId)
         score += isSaved ? 4 : 3
 
-        const inputShow = inputShows.find(s => s.dbShow?.id === linkedSeedId)
-        const savedShow = savedShows.find(s => s.show.id === linkedSeedId)
-        const sourceTitle = inputShow?.title || savedShow?.show?.title
+        const inputShow = tmdbToInputShow[linkedSeedId]
+        const sourceTitle = inputShow?.title || inputShow?.dbShow?.title
         if (sourceTitle) {
           reasons.push({ inputShowTitle: sourceTitle, explanation: link.explanation || null })
         }
