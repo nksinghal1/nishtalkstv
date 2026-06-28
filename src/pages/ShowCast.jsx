@@ -25,27 +25,43 @@ async function buildScores(inputShows, savedShows = []) {
   })
 
   // All "seed" shows = inputs + things user has already saved
-  const seedIds = new Set([
-    ...inputShows.filter(s => s.dbShow).map(s => s.dbShow.id),
-    ...savedShows.map(s => s.show.id),
-  ])
   const inputTmdbIds = new Set(inputShows.map(s => s.tmdbId))
 
-  // Also build tmdbId -> inputShow map for better reason lookup
+  // Build tmdb_id -> db_id map from allShows (shows_with_logs view)
+  // Use tmdb_id to cross-reference because log_id collision may corrupt .id
+  const tmdbIdToDbId = {}
+  allShows.forEach(s => { if (s.tmdb_id) tmdbIdToDbId[s.tmdb_id] = s.id })
+
+  // Resolve seed IDs via tmdb_id to avoid log_id collision in the view
+  const seedIds = new Set([
+    ...inputShows.filter(s => s.dbShow).map(s => tmdbIdToDbId[s.dbShow.tmdb_id] || s.dbShow.id),
+    ...savedShows.map(s => tmdbIdToDbId[s.show.tmdb_id] || s.show.id),
+  ])
+
+  // Build seedId -> title map for reason display
   const tmdbToInputShow = {}
-  inputShows.forEach(s => { if (s.dbShow) tmdbToInputShow[s.dbShow.id] = s })
-  savedShows.forEach(s => { tmdbToInputShow[s.show.id] = { title: s.show.title, dbShow: s.show } })
+  inputShows.forEach(s => {
+    if (s.dbShow) {
+      const resolvedId = tmdbIdToDbId[s.dbShow.tmdb_id] || s.dbShow.id
+      tmdbToInputShow[resolvedId] = s
+    }
+  })
+  savedShows.forEach(s => {
+    const resolvedId = tmdbIdToDbId[s.show.tmdb_id] || s.show.id
+    tmdbToInputShow[resolvedId] = { title: s.show.title, dbShow: s.show }
+  })
+
+  // Build a map of db id -> show for fast lookup
+  const dbIdToShow = {}
+  allShows.forEach(s => { dbIdToShow[s.id] = s })
 
   const inputTagUnion = new Set()
   seedIds.forEach(id => {
-    const show = allShows.find(s => s.id === id)
+    const show = dbIdToShow[id]
     if (show) {
-      // Add TMDB genres
       ;(show.genres || []).forEach(g => inputTagUnion.add(g.name))
-      // Add origin countries as tags
       ;(show.origin_country || []).forEach(c => inputTagUnion.add(c))
     }
-    // Add custom tags
     const tags = showTagMap[id] || new Set()
     tags.forEach(t => inputTagUnion.add(t))
   })
