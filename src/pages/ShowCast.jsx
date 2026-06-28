@@ -10,8 +10,8 @@ const BATCH_SIZE = 12
 async function buildScores(inputShows, savedShows = []) {
   const [showsRes, tagsRes, linksRes] = await Promise.all([
     supabase.from('shows_with_logs').select('*').not('watch_status', 'is', null),
-    supabase.from('show_tags').select('show_id, tags(name)'),
-    supabase.from('similarity_links').select('*'),
+    supabase.from('show_tags').select('show_id, tags(name)').limit(10000),
+    supabase.from('similarity_links').select('*').limit(10000),
   ])
 
   const allShows = showsRes.data || []
