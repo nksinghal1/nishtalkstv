@@ -8,15 +8,28 @@ const BATCH_SIZE = 12
 
 // ─── SCORING ─────────────────────────────────────────────────────
 async function buildScores(inputShows, savedShows = []) {
-  const [showsRes, tagsRes, linksRes] = await Promise.all([
-    supabase.from('shows_with_logs').select('*').not('watch_status', 'is', null),
-    supabase.from('show_tags').select('show_id, tags(name)').limit(10000),
-    supabase.from('similarity_links').select('*').limit(10000),
-  ])
+  // Fetch with pagination to bypass 1000 row Supabase limit
+  async function fetchAll(table, query = '*', filters = []) {
+    let allData = []
+    let page = 0
+    const pageSize = 1000
+    while (true) {
+      let q = supabase.from(table).select(query).range(page * pageSize, (page + 1) * pageSize - 1)
+      filters.forEach(f => { q = q[f.method](...f.args) })
+      const { data, error } = await q
+      if (error || !data || data.length === 0) break
+      allData = [...allData, ...data]
+      if (data.length < pageSize) break
+      page++
+    }
+    return allData
+  }
 
-  const allShows = showsRes.data || []
-  const allTagRows = tagsRes.data || []
-  const allLinks = linksRes.data || []
+  const [allShows, allTagRows, allLinks] = await Promise.all([
+    fetchAll('shows_with_logs', '*', [{ method: 'not', args: ['watch_status', 'is', null] }]),
+    fetchAll('show_tags', 'show_id, tags(name)'),
+    fetchAll('similarity_links', '*'),
+  ])
 
   const showTagMap = {}
   allTagRows.forEach(row => {
