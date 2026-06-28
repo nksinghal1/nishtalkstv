@@ -34,7 +34,13 @@ async function buildScores(inputShows, savedShows = []) {
   const inputTagUnion = new Set()
   seedIds.forEach(id => {
     const show = allShows.find(s => s.id === id)
-    if (show) (show.genres || []).forEach(g => inputTagUnion.add(g.name))
+    if (show) {
+      // Add TMDB genres
+      ;(show.genres || []).forEach(g => inputTagUnion.add(g.name))
+      // Add origin countries as tags
+      ;(show.origin_country || []).forEach(c => inputTagUnion.add(c))
+    }
+    // Add custom tags
     const tags = showTagMap[id] || new Set()
     tags.forEach(t => inputTagUnion.add(t))
   })
@@ -66,14 +72,16 @@ async function buildScores(inputShows, savedShows = []) {
     }
 
     const showTags = showTagMap[show.id] || new Set()
-    const sharedTags = [...showTags].filter(t => inputTagUnion.has(t))
+    // Also count TMDB genre matches
+    const showGenres = new Set((show.genres || []).map(g => g.name))
+    const allShowTags = new Set([...showTags, ...showGenres])
+    const sharedTags = [...allShowTags].filter(t => inputTagUnion.has(t))
     score += sharedTags.length
     if (show.tmdb_rating >= 8) score += 0.5
 
-    // Require at least one direct link OR 3+ shared tags to avoid random matches
+    // Require direct link OR meaningful tag overlap to filter noise
     const hasDirectLink = reasons.length > 0
-    const strongTagMatch = sharedTags.length >= 3
-    if (score >= 3 || (score > 0 && (hasDirectLink || strongTagMatch))) scored.push({ show, score, reasons, sharedTags })
+    if (hasDirectLink || sharedTags.length >= 2) scored.push({ show, score, reasons, sharedTags })
   }
 
   return scored.sort((a, b) => b.score - a.score)
