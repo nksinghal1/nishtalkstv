@@ -70,7 +70,10 @@ async function buildScores(inputShows, savedShows = []) {
     score += sharedTags.length
     if (show.tmdb_rating >= 8) score += 0.5
 
-    if (score > 0) scored.push({ show, score, reasons, sharedTags })
+    // Require at least one direct link OR 3+ shared tags to avoid random matches
+    const hasDirectLink = reasons.length > 0
+    const strongTagMatch = sharedTags.length >= 3
+    if (score >= 3 || (score > 0 && (hasDirectLink || strongTagMatch))) scored.push({ show, score, reasons, sharedTags })
   }
 
   return scored.sort((a, b) => b.score - a.score)
