@@ -296,10 +296,6 @@
   font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.7;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 /* Why section */
@@ -540,4 +536,14 @@
   .showcast-no-poster { min-height: 240px; }
   .showcast-card-body { max-height: none; }
   .showcast-hero h1 { font-size: 2.25rem; }
+}
+
+/* Tag-only / loose match */
+.showcast-why-loose {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.showcast-why-loose .showcast-why-label {
+  color: var(--text-muted);
 }

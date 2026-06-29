@@ -117,16 +117,10 @@ async function buildScores(inputShows, savedShows = []) {
     if (hasDirectLink || sharedTags.length >= 2) scored.push({ show, score, reasons, sharedTags })
   }
 
-  console.log('=== SHOWCAST DEBUG ===')
-  console.log('seedIds:', [...seedIds])
-  console.log('allShows count:', allShows.length)
-  console.log('allLinks count:', allLinks.length)
-  console.log('inputTagUnion:', [...inputTagUnion])
-  const directLinks = scored.filter(r => r.reasons.length > 0)
-  const tagOnly = scored.filter(r => r.reasons.length === 0)
-  console.log('Results with direct links:', directLinks.length, directLinks.map(r => r.show.title))
-  console.log('Tag-only results:', tagOnly.length, tagOnly.slice(0,5).map(r => r.show.title))
-  return scored.sort((a, b) => b.score - a.score)
+  // Sort: direct links first, tag-only after
+  const withLinks = scored.filter(r => r.reasons.length > 0).sort((a, b) => b.score - a.score)
+  const tagOnly = scored.filter(r => r.reasons.length === 0).sort((a, b) => b.score - a.score)
+  return [...withLinks, ...tagOnly]
 }
 
 // ─── INPUT SCREEN ────────────────────────────────────────────────
@@ -292,7 +286,7 @@ function SwipeCard({ result, onAdd, onSkip }) {
 
           {show.overview && <p className="showcast-card-overview">{show.overview}</p>}
 
-          {uniqueReasons.length > 0 && (
+          {uniqueReasons.length > 0 ? (
             <div className="showcast-why">
               <div className="showcast-why-label">Why ShowCast picked this</div>
               {uniqueReasons.slice(0,3).map((r, i) => (
@@ -306,6 +300,14 @@ function SwipeCard({ result, onAdd, onSkip }) {
                   {sharedTags.slice(0,5).map(t => <span key={t} className="badge badge-muted">#{t}</span>)}
                 </div>
               )}
+            </div>
+          ) : sharedTags.length > 0 && (
+            <div className="showcast-why showcast-why-loose">
+              <div className="showcast-why-label">Similar vibes</div>
+              <p style={{fontSize:'0.8125rem',color:'var(--text-muted)',marginBottom:'0.5rem'}}>No direct link logged — matched on shared themes</p>
+              <div className="showcast-shared-tags">
+                {sharedTags.slice(0,6).map(t => <span key={t} className="badge badge-muted">#{t}</span>)}
+              </div>
             </div>
           )}
 
