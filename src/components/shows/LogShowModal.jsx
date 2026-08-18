@@ -37,7 +37,7 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
 
   // Load all existing tags for autocomplete
   useEffect(() => {
-    tagsApi.getAll().then(setAllTags).catch(() => {})
+    tagsApi.getAll().then(setAllTags).catch(() => { })
   }, [])
 
   // Pre-populate if editing
@@ -222,7 +222,7 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
       }
       await watchLogsApi.upsert(showRecord.id, logData)
 
-      await watchlistApi.remove(showRecord.tmdb_id).catch(() => {})
+      await watchlistApi.remove(showRecord.tmdb_id).catch(() => { })
 
       await tagsApi.setShowTags(showRecord.id, tags, showRecord)
 
@@ -238,7 +238,7 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
 
       for (const sim of similarities) {
         if (!sim.linkId) {
-          await similarityApi.createLink(showRecord.id, sim.showId, sim.explanation)
+          await similarityApi.addLink(showRecord.id, sim.showId, sim.explanation)
         } else {
           await similarityApi.updateLink(sim.linkId, sim.explanation)
         }
@@ -362,7 +362,7 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
                       )}
                     </label>
                     <div className="rating-picker">
-                      {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                         <button
                           key={n}
                           className={`rating-btn ${rating == n ? 'active' : ''}`}
@@ -375,7 +375,7 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Review <span style={{color:'var(--text-muted)'}}>— optional</span></label>
+                    <label className="form-label">Review <span style={{ color: 'var(--text-muted)' }}>— optional</span></label>
                     <textarea
                       className="textarea"
                       placeholder="Your thoughts on this show..."
@@ -391,7 +391,7 @@ export default function LogShowModal({ onClose, onSuccess, editShow = null, onEd
               {watchStatus === 'dropped' && (
                 <div className="log-section">
                   <div className="form-group">
-                    <label className="form-label">Why did you drop it? <span style={{color:'var(--text-muted)'}}>— optional</span></label>
+                    <label className="form-label">Why did you drop it? <span style={{ color: 'var(--text-muted)' }}>— optional</span></label>
                     <textarea
                       className="textarea"
                       placeholder="e.g. Lost interest after season 2..."
